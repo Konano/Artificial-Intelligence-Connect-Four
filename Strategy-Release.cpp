@@ -1,10 +1,13 @@
 #include <iostream>
 #include <cmath>
 #include <cstring>
+#include <ctime>
 #include "Point.h"
 #include "Strategy.h"
 
 using namespace std;
+
+#define TIME 2.8
 
 #define clr(x, c) memset(x,c,sizeof(x))
 
@@ -123,7 +126,7 @@ inline bool CheckLost()
 	for(int o = 0; o < N+M; o++)
 	{
 		Count = now = 0;
-		for(int i = min(N-1,o), j = o-i; i && j < M; i--, j++)
+		for(int i = min(N-1,o), j = o-i; i >= 0 && j < M; i--, j++)
 		{
 			if (board[i][j])
 				if (!now || now == board[i][j])
@@ -176,7 +179,11 @@ extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, con
 
 	Init();
 
-    for(int i = 1000; i; i--) Search(0,2);
+	srand(1);
+
+    clock_t startTime = clock();
+	//while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
+	while(tot < 100000) Search(0,2);
 
 	double mx = 0;
 	int Ans = 0;

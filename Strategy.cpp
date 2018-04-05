@@ -1,9 +1,13 @@
-#include <cmath>
+#define _debug
+
 #include <iostream>
+#include <cmath>
+#include <ctime>
 
 using namespace std;
 
 #define MAXSITUATION 2000000
+#define TIME 2.8
 
 int N, M, top[20], board[20][20], noX, noY;
 
@@ -84,7 +88,7 @@ inline bool CheckLost()
 	for(int o = 0; o < N+M; o++)
 	{
 		Count = now = 0;
-		for(int i = min(N-1,o), j = o-i; i && j < M; i--, j++)
+		for(int i = min(N-1,o), j = o-i; i >= 0 && j < M; i--, j++)
 		{
 			if (board[i][j])
 				if (!now || now == board[i][j])
@@ -144,7 +148,15 @@ int main()
 {
 	GetData();
 
-	for(int i = 100; i; i--) Search(0,2);
+	srand(1);
+
+	clock_t startTime = clock();
+	// while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
+	while(tot < 1000000) Search(0,2);
+
+	#ifdef _debug
+	printf("Situation: %d\n", tot);
+	#endif
 
 	double mx = 0;
 	int Ans = 0;
@@ -154,4 +166,5 @@ int main()
 
 	//printf("%d %d\n", Ans, top[Ans]-1);
 	printf("%d\n", Ans);
+	return 0;
 }

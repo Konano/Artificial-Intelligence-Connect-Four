@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define TIME 2.8
+#define TIME 0.5
 
 #define clr(x, c) memset(x,c,sizeof(x))
 
@@ -62,17 +62,15 @@ inline double Rand(double d)
 
 inline int Choose(int now)
 {
-	double sum = 0;
+	double mx = -1;
+	int Choose = -1;
 	for(int i = 0; i < N; i++) if (top[i])
-		sum += (double)w[now][i]/n[now][i] + sqrt(2*log(t[now])/n[now][i]);
-	double ran = Rand(sum);
-	for(int i = 0; i < N; i++) if (top[i])
-	{
-		if (ran > (double)w[now][i]/n[now][i] + sqrt(2*log(t[now])/n[now][i]))
-			ran -= (double)w[now][i]/n[now][i] + sqrt(2*log(t[now])/n[now][i]);
-		else return i;
-	}
-	return 0;
+		if (mx < (double)w[now][i]/n[now][i] + sqrt(2*log(t[now])/n[now][i]))
+		{
+			mx = (double)w[now][i]/n[now][i] + sqrt(2*log(t[now])/n[now][i]);
+			Choose = i;
+		}
+	return Choose;
 }
 
 inline bool CheckLost()
@@ -149,6 +147,7 @@ inline int Search(int now, int player)
 		for(int i = 0; i < N; i++) if (top[i])
 			n[now][i] = 1, t[now]++;
 	int st = Choose(now);
+	if (st == -1) return 0;
 
 	board[st][--top[st]] = player;
 	bool noFlag = false;
@@ -182,8 +181,8 @@ extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, con
 	srand(1);
 
     clock_t startTime = clock();
-	//while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
-	while(tot < 100000) Search(0,2);
+	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
+	// while(tot < 100000) Search(0,2);
 
 	double mx = 0;
 	int Ans = 0;

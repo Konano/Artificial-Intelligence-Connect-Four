@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define TIME 0.5
+#define TIME 1
 
 #define clr(x, c) memset(x,c,sizeof(x))
 
@@ -62,6 +62,13 @@ inline double Rand(double d)
 
 inline int Choose(int now)
 {
+	for(int i = 0; i < N; i++) if (top[i] && n[now][i] == 0)
+	{
+		int x = rand() % N;
+		while (!top[x]) x = rand() % N;
+		return i;
+	}
+
 	double mx = -1;
 	int Choose = -1;
 	for(int i = 0; i < N; i++) if (top[i])

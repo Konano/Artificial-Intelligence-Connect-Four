@@ -7,7 +7,7 @@
 using namespace std;
 
 #define MAXSITUATION 2000000
-#define TIME 2.8
+#define TIME 0.5
 
 int N, M, top[20], board[20][20], noX, noY;
 
@@ -24,6 +24,13 @@ inline double Rand(double d)
 
 inline int Choose(int now)
 {
+	for(int i = 0; i < N; i++) if (top[i] && n[now][i] == 0)
+	{
+		int x = rand() % N;
+		while (!top[x]) x = rand() % N;
+		return i;
+	}
+
 	double mx = -1;
 	int Choose = -1;
 	for(int i = 0; i < N; i++) if (top[i])
@@ -105,9 +112,6 @@ inline int Search(int now, int player)
 {
 	if (CheckLost()) return 0;
 
-	if (t[now] == 0)
-		for(int i = 0; i < N; i++) if (top[i])
-			n[now][i] = 1, t[now]++;
 	int st = Choose(now);
 	if (st == -1) return 0;
 
@@ -150,8 +154,7 @@ int main()
 	srand(1);
 
 	clock_t startTime = clock();
-	// while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
-	while(tot < 100000) Search(0,2);
+	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
 
 	#ifdef _debug
 	printf("Situation: %d\n", tot);

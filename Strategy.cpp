@@ -1,4 +1,4 @@
-#define _debug
+#define _DEBUG
 
 #include <iostream>
 #include <cmath>
@@ -156,7 +156,7 @@ int main()
 	clock_t startTime = clock();
 	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
 
-	#ifdef _debug
+	#ifdef _DEBUG
 	printf("Situation: %d\n", tot);
 	#endif
 

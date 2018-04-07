@@ -2,8 +2,16 @@
 #include <cmath>
 #include <cstring>
 #include <ctime>
+#include <conio.h>
+#include <atlstr.h>
 #include "Point.h"
 #include "Strategy.h"
+
+#define _DEBUG
+
+#ifdef _DEBUG
+int GAME[409], GAMETOT = 0;
+#endif
 
 using namespace std;
 
@@ -174,16 +182,16 @@ inline int Search(int now, int player)
 
 extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, const int* _top, const int* _board,
 	const int lastX, const int lastY, const int _noX, const int _noY){
-	/*
-		不要更改这段代码
-	*/
 
-	N = _N, M = _M, noX = _noX, noY = _noY;
+	N = _N, M = _M, noX = _noY, noY = _noX;
 	for(int i = 0; i < N; i++) top[i] = _top[i];
 	for(int j = 0; j < M; j++) for(int i = 0; i < N; i++)
 		board[i][j] = _board[j*N+i];
-
 	Init();
+
+	/*
+		不要更改这段代码
+	*/
 
 	srand(1);
 
@@ -197,9 +205,22 @@ extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, con
 		if (mx < 1.0*w[0][i]/n[0][i])
 			mx = 1.0*w[0][i]/n[0][i], Ans = i;
 
+	#ifdef _DEBUG
+	AllocConsole();
+	for(int i = 0; i < N; i++) if (top[i])
+		_cprintf("%d, w = %d, n = %d\n", i, w[0][i], n[0][i]);
+	if (lastY != -1) GAME[GAMETOT++] = lastY;
+	_cprintf("\n%d %d %d %d\n%d\n", N, M, noX, noY, GAMETOT);
+	for(int i = 0; i < GAMETOT; i++)
+		_cprintf("%d ", GAME[i]);
+	_cprintf("\n\nAns: %d\n\n====================================================\n\n", Ans);
+	GAME[GAMETOT++] = Ans;
+	#endif
+
 	/*
 		不要更改这段代码
 	*/
+
 	return new Point(top[Ans]-1, Ans);
 }
 

@@ -7,9 +7,10 @@
 #include "Point.h"
 #include "Strategy.h"
 
-#define _DEBUG
+//#define _GETLOG
+//#define _DEBUG
 
-#ifdef _DEBUG
+#ifdef _GETLOG
 int GAME[409], GAMETOT = 0;
 #endif
 
@@ -79,18 +80,45 @@ inline int Choose(int now)
 }
 
 int WIN[3];
-inline void CanWin(int player, int x, int y)
+int Dx[8] = {-1,-1,0,1,1,1,0,-1};
+int Dy[8] = {0,1,1,1,0,-1,-1,-1};
+inline int max4(int a, int b, int c, int d){return max(max(a,b),max(c,d));}
+inline bool Check(int x, int y, int player)
 {
-	if (0 <= x && x < N) return;
-	if (0 <= y && y < M) return;
-	if (top[x]-1 != y) return;
-	WIN[player] = WIN[player] * (N+1) + x + 1;
+	if (0<=x && x<N && 0<=y && y<M) return board[x][y]==player;
+	return false;
 }
-inline void CanWin_Init(){WIN[1] = WIN[2] = 0;}
+inline void CanWin()
+{
+	for(int player = 1; player <= 2; player++)
+	{
+		WIN[player] = 0;
+		for(int i = 0; i < N; i++) if (top[i])
+		{
+			int x = i, y = top[i]-1;
+			int d[8];
+			for(int dir = 0; dir < 8; dir++)
+			{
+				d[dir] = 0;
+				while (Check(x+Dx[dir]*(d[dir]+1), y+Dy[dir]*(d[dir]+1), player))
+					d[dir]++;
+			}
+			if (max4(d[0] + d[4], d[1] + d[5], d[2] + d[6], d[3] + d[7]) >= 3)
+			{
+				WIN[player] = WIN[player] * (N+1) + x + 1;
+
+				#ifdef _DEBUG
+				for(int dir = 0; dir < 8; dir++) _cprintf("%d ", d[dir]);
+				_cprintf("==== ");
+				#endif
+			}
+		}
+
+	}
+}
 
 inline bool CheckLost()
 {
-	CanWin_Init();
 	int Count = 0, now = 0;
 	for(int i = 0; i < N; i++)
 	{
@@ -104,7 +132,6 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
-			if (Count == 3) CanWin(now, i, j+1), CanWin(now, i, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -120,7 +147,6 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
-			if (Count == 3) CanWin(now, i+1, j), CanWin(now, i-3, j);
 			if (Count == 4) return true;
 		}
 	}
@@ -136,7 +162,6 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
-			if (Count == 3) CanWin(now, i+1, j+1), CanWin(now, i-3, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -152,31 +177,44 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
-			if (Count == 3) CanWin(now, i-1, j+1), CanWin(now, i+3, j-3);
 			if (Count == 4) return true;
 		}
 	}
 	return false;
 }
 
-inline int Search(int now, int player)
+inline int Search(int now, int player, int DDD)
 {
 	if (CheckLost()) return 0;
 
 	int st = Choose(now);
 	if (st == -1) return 0;
 
-	if (WIN[player]) st = WIN[player] % (N+1);
+	#ifdef _DEBUG
+	_cprintf("%d %d %d ---- ", now, player, DDD);
+	#endif
+
+	CanWin();
+
+	if (WIN[player]) st = WIN[player] % (N+1) - 1;
 	else if (WIN[3 - player] >= N+1) return 0;
-	else if (WIN[3 - player]) st = WIN[3 - player];
+	else if (WIN[3 - player]) st = WIN[3 - player] - 1;
 
 	board[st][--top[st]] = player;
 	bool noFlag = false;
 	if (top[noX] - 1 == noY) top[noX]--, noFlag = true;
 
+	#ifdef _DEBUG
+	_cprintf("%d %d %d\n", WIN[1], WIN[2], st);
+	if (DDD > N*M)
+	{
+		while(true);
+	}
+	#endif
+
 	n[now][st]++; t[now]++;
 	if (nx[now][st] == 0) nx[now][st] = ++tot;
-	int winorlost = Search(nx[now][st], 3-player);
+	int winorlost = Search(nx[now][st], 3-player, DDD+1);
 	if (winorlost == 0)
 		w[now][st]++;
 
@@ -215,25 +253,28 @@ extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, con
 
 	srand(1);
 
+	#ifdef _GETLOG
+	AllocConsole();
+	#endif
+
     clock_t startTime = clock();
-	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2);
+	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) Search(0,2,0);
 	// while(tot < 100000) Search(0,2);
 
-	double mx = 0;
-	int Ans = 0;
+	double mx = -1;
+	int Ans = -1;
 	for(int i = 0; i < N; i++) if (top[i])
-		if (mx < 1.0*w[0][i]/n[0][i])
-			mx = 1.0*w[0][i]/n[0][i], Ans = i;
+		if (mx < 1.0*w[0][i]/max(1,n[0][i]))
+			mx = 1.0*w[0][i]/max(1,n[0][i]), Ans = i;
 
-	#ifdef _DEBUG
-	AllocConsole();
+	#ifdef _GETLOG
 	for(int i = 0; i < N; i++) if (top[i])
 		_cprintf("%d, w = %d, n = %d\n", i, w[0][i], n[0][i]);
 	if (lastY != -1) GAME[GAMETOT++] = lastY;
 	_cprintf("\n%d %d %d %d\n%d\n", N, M, noX, noY, GAMETOT);
 	for(int i = 0; i < GAMETOT; i++)
 		_cprintf("%d ", GAME[i]);
-	_cprintf("\n\nAns: %d\n\n====================================================\n\n", Ans);
+	_cprintf("\n\nAns: %d\n%.2lf%%\n\n====================================================\n\n", Ans, mx*100);
 	GAME[GAMETOT++] = Ans;
 	#endif
 

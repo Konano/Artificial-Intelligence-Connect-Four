@@ -6,8 +6,11 @@
 
 using namespace std;
 
-#define MAXSITUATION 2000000
 #define TIME 0.5
+
+// Copy from this
+
+#define MAXSITUATION 2000000
 
 int N, M, top[20], board[20][20], noX, noY;
 
@@ -42,8 +45,19 @@ inline int Choose(int now)
 	return Choose;
 }
 
+int WIN[3];
+inline void CanWin(int player, int x, int y)
+{
+	if (0 <= x && x < N) return;
+	if (0 <= y && y < M) return;
+	if (top[x]-1 != y) return;
+	WIN[player] = WIN[player] * (N+1) + x + 1;
+}
+inline void CanWin_Init(){WIN[1] = WIN[2] = 0;}
+
 inline bool CheckLost()
 {
+	CanWin_Init();
 	int Count = 0, now = 0;
 	for(int i = 0; i < N; i++)
 	{
@@ -57,6 +71,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i, j+1), CanWin(now, i, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -72,6 +87,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i+1, j), CanWin(now, i-3, j);
 			if (Count == 4) return true;
 		}
 	}
@@ -87,6 +103,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i+1, j+1), CanWin(now, i-3, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -102,6 +119,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i-1, j+1), CanWin(now, i+3, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -114,6 +132,10 @@ inline int Search(int now, int player)
 
 	int st = Choose(now);
 	if (st == -1) return 0;
+
+	if (WIN[player]) st = WIN[player] % (N+1);
+	else if (WIN[3 - player] >= N+1) return 0;
+	else if (WIN[3 - player]) st = WIN[3 - player];
 
 	board[st][--top[st]] = player;
 	bool noFlag = false;
@@ -130,6 +152,8 @@ inline int Search(int now, int player)
 
 	return (1 - winorlost);
 }
+
+// Copy end
 
 inline void GetData()
 {
@@ -160,11 +184,11 @@ int main()
 	printf("Situation: %d\n", tot);
 	#endif
 
-	double mx = 0;
-	int Ans = 0;
+	double mx = -1;
+	int Ans = -1;
 	for(int i = 0; i < N; i++) if (top[i])
-		if (mx < 1.0*w[0][i]/n[0][i])
-			mx = 1.0*w[0][i]/n[0][i], Ans = i;
+		if (mx < 1.0*w[0][i]/max(1,n[0][i]))
+			mx = 1.0*w[0][i]/max(1,n[0][i]), Ans = i;
 
 	//printf("%d %d\n", Ans, top[Ans]-1);
 	printf("%d\n", Ans);

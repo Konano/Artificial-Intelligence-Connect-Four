@@ -41,6 +41,8 @@ using namespace std;
 		ÄãµÄÂä×ÓµãPoint
 */
 
+// Copy from this
+
 #define MAXSITUATION 2000000
 
 int N, M, top[20], board[20][20], noX, noY;
@@ -48,18 +50,6 @@ int N, M, top[20], board[20][20], noX, noY;
 int tot = 0;
 int nx[MAXSITUATION][20];
 int w[MAXSITUATION][20], n[MAXSITUATION][20], t[MAXSITUATION];
-
-inline void Init()
-{
-	for(int i = 0; i <= tot; i++)
-	{
-		clr(nx[i], 0);
-		clr(w[i], 0);
-		clr(n[i], 0);
-		t[i] = 0;
-	}
-	tot = 0;
-}
 
 inline double Rand(double d)
 {
@@ -88,8 +78,19 @@ inline int Choose(int now)
 	return Choose;
 }
 
+int WIN[3];
+inline void CanWin(int player, int x, int y)
+{
+	if (0 <= x && x < N) return;
+	if (0 <= y && y < M) return;
+	if (top[x]-1 != y) return;
+	WIN[player] = WIN[player] * (N+1) + x + 1;
+}
+inline void CanWin_Init(){WIN[1] = WIN[2] = 0;}
+
 inline bool CheckLost()
 {
+	CanWin_Init();
 	int Count = 0, now = 0;
 	for(int i = 0; i < N; i++)
 	{
@@ -103,6 +104,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i, j+1), CanWin(now, i, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -118,6 +120,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i+1, j), CanWin(now, i-3, j);
 			if (Count == 4) return true;
 		}
 	}
@@ -133,6 +136,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i+1, j+1), CanWin(now, i-3, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -148,6 +152,7 @@ inline bool CheckLost()
 					now = board[i][j], Count = 1;
 			else
 				Count = now = 0;
+			if (Count == 3) CanWin(now, i-1, j+1), CanWin(now, i+3, j-3);
 			if (Count == 4) return true;
 		}
 	}
@@ -158,11 +163,12 @@ inline int Search(int now, int player)
 {
 	if (CheckLost()) return 0;
 
-	if (t[now] == 0)
-		for(int i = 0; i < N; i++) if (top[i])
-			n[now][i] = 1, t[now]++;
 	int st = Choose(now);
 	if (st == -1) return 0;
+
+	if (WIN[player]) st = WIN[player] % (N+1);
+	else if (WIN[3 - player] >= N+1) return 0;
+	else if (WIN[3 - player]) st = WIN[3 - player];
 
 	board[st][--top[st]] = player;
 	bool noFlag = false;
@@ -178,6 +184,20 @@ inline int Search(int now, int player)
 	board[st][top[st]++] = 0;
 
 	return (1 - winorlost);
+}
+
+// Copy end
+
+inline void Init()
+{
+	for(int i = 0; i <= tot; i++)
+	{
+		clr(nx[i], 0);
+		clr(w[i], 0);
+		clr(n[i], 0);
+		t[i] = 0;
+	}
+	tot = 0;
 }
 
 extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, const int* _top, const int* _board,

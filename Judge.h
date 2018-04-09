@@ -8,10 +8,10 @@
 extern int WIN[3]; // 记录制胜位的信息
 
 
-inline bool CheckBoard(int x, int y, int player);
-
 void WinPlace();
 
 bool GameOver();
+
+bool Start();
 
 #endif

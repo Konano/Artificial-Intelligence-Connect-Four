@@ -46,12 +46,10 @@ extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, con
 
 	// 初始化，同时交换 XY 轴
 
-	N = _N, M = _M, noX = _noY, noY = _noX, lastX = _lastX, lastY = _lastY;
+	N = _N, M = _M, noX = _noY, noY = _noX, lastX = _lastY, lastY = _lastX;
 	for(int i = 0; i < N; i++) top[i] = _top[i];
 	for(int j = 0; j < M; j++) for(int i = 0; i < N; i++)
 		board[i][j] = _board[j*N+i];
-
-	Situation_Init();
 
 	// 打开控制板
 
@@ -59,10 +57,12 @@ extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, con
 	AllocConsole();
 	#endif
 
+	Situation_Init();
+
 	srand(1);
 
     clock_t startTime = clock();
-	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) MCTS(0, 2);
+	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) MCTS(nowSituation, 2);
 
 	int Action = GetFinalAction();
 

@@ -129,3 +129,15 @@ bool GameOver()
 
     return false;
 }
+
+bool Start()
+{
+    static int sum;
+    sum = 0;
+    for(int i = 0; i < N; i++) for(int j = 0; j < M; j++)
+    {
+        sum += (board[i][j] > 0);
+        if (sum > 1) return false;
+    }
+    return true;
+}

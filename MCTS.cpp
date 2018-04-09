@@ -5,7 +5,10 @@
 #include "Judge.h"
 #include "MCTS.h"
 
-int Total_Situation = 0; // 总局面数
+int Total_Situation; // 总局面数
+
+int nowSituation;
+int _nowSituation;
 
 int Next_Situation[MAXSITUATION][MAXSIZE]; // Next_Situation[S][next] 为在 S 局面下放棋子于第 next 列后的局面编号
 
@@ -15,18 +18,56 @@ int Choose_Times[MAXSITUATION][MAXSIZE]; // 每个分支局面被探索的次数
 
 int Total_Times[MAXSITUATION]; // 局面被探索的次数
 
+class STACK
+{
+	int Total, q[MAXSITUATION];
+public:
+	STACK() { Total = 0; };
+	bool empty() { return Total == 0; }
+	void clear() { Total = 0; }
+	void push(int v) { q[Total++] = v; }
+	int front() { return q[--Total]; }
+} ST; // 删除局面下标存放处
+
+inline void CleanSituation(int i)
+{
+	clr(Next_Situation[i], 0);
+	clr(Win_Times[i], 0);
+	clr(Choose_Times[i], 0);
+	Total_Times[i] = 0;
+	ST.push(i);
+}
+
+inline int NewSituation()
+{
+	if (ST.empty())
+		return ++Total_Situation;
+	else
+		return ST.front();
+}
+
+inline void DeleteSituation(int now)
+{
+	if (now == nowSituation) return;
+	for(int i = 0; i < MAXSIZE; i++) if (Next_Situation[now][i]) DeleteSituation(Next_Situation[now][i]);
+	CleanSituation(now);
+}
+
 // 初始化
 
 void Situation_Init()
 {
-	for(int i = 0; i <= Total_Situation; i++)
+	if (Start())
 	{
-		clr(Next_Situation[i], 0);
-		clr(Win_Times[i], 0);
-		clr(Choose_Times[i], 0);
-		Total_Times[i] = 0;
+		for(int i = 0; i <= Total_Situation; i++) CleanSituation(i);
+		ST.clear();
+		_nowSituation = nowSituation = Total_Situation = 0;
+		return;
 	}
-	Total_Situation = 0;
+	nowSituation = Next_Situation[nowSituation][lastX];
+
+	DeleteSituation(_nowSituation);
+	_nowSituation = nowSituation;
 }
 
 // 选择某一分支局面作为探索的方向
@@ -92,7 +133,7 @@ int MCTS(int now, int player)
 	Choose_Times[now][Action]++;
 	Total_Times[now]++;
 	if (Next_Situation[now][Action] == 0)
-		Next_Situation[now][Action] = ++Total_Situation;
+		Next_Situation[now][Action] = NewSituation();
 	int winorlost = MCTS(Next_Situation[now][Action], 3-player);
 	if (winorlost == 0)
 		Win_Times[now][Action]++;
@@ -115,8 +156,9 @@ int GetFinalAction()
 	Possibility = -1;
 	Action = -1;
 	for(int i = 0; i < N; i++) if (top[i])
-		if (Possibility < (double)Win_Times[0][i]/max(1,Choose_Times[0][i]))
-			Possibility = (double)Win_Times[0][i]/max(1,Choose_Times[0][i]), Action = i;
+		if (Possibility < (double)Win_Times[nowSituation][i]/max(1,Choose_Times[nowSituation][i]))
+			Possibility = (double)Win_Times[nowSituation][i]/max(1,Choose_Times[nowSituation][i]), Action = i;
+	nowSituation = Next_Situation[nowSituation][Action];
 	return Action;
 }
 
@@ -125,8 +167,8 @@ int GAME[409], GAMETOT = 0; // 初始化棋局历史信息记录数组
 void GetFinalData()
 {
 	for(int i = 0; i < N; i++) if (top[i])
-		_cprintf("%d, w = %d, n = %d\n", i, Win_Times[0][i], Choose_Times[0][i]);
-	if (lastY != -1) GAME[GAMETOT++] = lastY;
+		_cprintf("%d, w = %d, n = %d\n", i, Win_Times[_nowSituation][i], Choose_Times[_nowSituation][i]);
+	if (lastX != -1) GAME[GAMETOT++] = lastX;
 	_cprintf("\n%d %d %d %d\n%d\n", N, M, noX, noY, GAMETOT);
 	for(int i = 0; i < GAMETOT; i++)
 		_cprintf("%d ", GAME[i]);

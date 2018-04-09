@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define TIME 0.5
+#define TIME 3
 
 // Copy from this
 
@@ -31,7 +31,7 @@ inline int Choose(int now)
 	{
 		int x = rand() % N;
 		while (!top[x]) x = rand() % N;
-		return i;
+		return x;
 	}
 
 	double mx = -1;
@@ -204,6 +204,6 @@ int main()
 			mx = 1.0*w[0][i]/max(1,n[0][i]), Ans = i;
 
 	//printf("%d %d\n", Ans, top[Ans]-1);
-	printf("%d\n", Ans);
+	printf("%d %.3lf%%\n", Ans, mx*100);
 	return 0;
 }

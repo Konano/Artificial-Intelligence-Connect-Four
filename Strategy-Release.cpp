@@ -65,7 +65,7 @@ inline int Choose(int now)
 	{
 		int x = rand() % N;
 		while (!top[x]) x = rand() % N;
-		return i;
+		return x;
 	}
 
 	double mx = -1;

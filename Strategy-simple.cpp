@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define TIME 3
+#define TIME 8
 
 // Copy from this
 

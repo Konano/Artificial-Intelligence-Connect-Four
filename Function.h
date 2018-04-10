@@ -5,8 +5,11 @@
 #ifndef FUNCTION_H_
 #define	FUNCTION_H_
 
- #define _GETLOG
-// #define _DEBUG
+#include <conio.h>
+#include <atlstr.h>
+
+// #define _GETLOG
+// #define ___DEBUG
 
 // 清空数组信息
 #include <cstring>

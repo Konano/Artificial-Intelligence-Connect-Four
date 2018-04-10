@@ -31,7 +31,8 @@ using namespace std;
 */
 
 
-int N, M, top[MAXSIZE], board[MAXSIZE][MAXSIZE], noX, noY, lastX, lastY;
+int N, M, lastX, lastY, noX, noY;
+BOARD board;
 
 
 inline double Rand(double d)
@@ -44,25 +45,22 @@ inline double Rand(double d)
 extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, const int* _top, const int* _board,
 	const int _lastX, const int _lastY, const int _noX, const int _noY){
 
-	// 初始化，同时交换 XY 轴
-
-	N = _N, M = _M, noX = _noY, noY = _noX, lastX = _lastX, lastY = _lastY;
-	for(int i = 0; i < N; i++) top[i] = _top[i];
-	for(int j = 0; j < M; j++) for(int i = 0; i < N; i++)
-		board[i][j] = _board[j*N+i];
-
-	Situation_Init();
-
 	// 打开控制板
 
 	#ifdef _GETLOG
 	AllocConsole();
 	#endif
 
+	// 初始化，同时交换 XY 轴
+
+	N = _N, M = _M, lastX = _lastY, lastY = _lastX, noX = _noY, noY = _noX;
+	board.Init(N, M, _noY, _noX, _top, _board);
+	Situation_Init();
+
 	srand(1);
 
-    clock_t startTime = clock();
-	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME) MCTS(0, 2);
+	clock_t startTime = clock();
+	while((double)(clock()-startTime)/CLOCKS_PER_SEC < TIME && Total_Situation < MAXSITUATION - 150) MCTS(0, 2);
 
 	int Action = GetFinalAction();
 
@@ -74,7 +72,7 @@ extern "C" __declspec(dllexport) Point* getPoint(const int _M, const int _N, con
 
 	// 返回结果
 
-	return new Point(top[Action]-1, Action);
+	return new Point(board.GetTop(Action)-1, Action);
 }
 
 

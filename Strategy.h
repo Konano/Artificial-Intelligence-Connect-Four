@@ -8,8 +8,10 @@
 #include "Argument.h"
 #include "Function.h"
 #include "Point.h"
+#include "Board.h"
 
-extern int N, M, top[MAXSIZE], board[MAXSIZE][MAXSIZE], noX, noY, lastX, lastY;
+extern int N, M, lastX, lastY, noX, noY;
+extern BOARD board;
 
 
 extern "C" __declspec(dllexport) Point* getPoint(const int M, const int N, const int* top, const int* _board,

@@ -1,6 +1,4 @@
 #include <cmath>
-#include <conio.h>
-#include <atlstr.h>
 #include "Strategy.h"
 #include "Judge.h"
 #include "MCTS.h"
@@ -31,39 +29,38 @@ void Situation_Init()
 
 // 选择某一分支局面作为探索的方向
 
-inline int BestAction(int nowSituation)
+inline int BestAction(const int nowSituation)
 {
 	// 若有分支局面未探索过，则采取随机选择决策
 
-	for(int i = 0; i < N; i++) if (top[i] && Choose_Times[nowSituation][i] == 0)
+	for(int i = 0; i < N; i++) if (!board.full(i) && Choose_Times[nowSituation][i] == 0)
 	{
 		int x = rand() % N;
-		while (!top[x]) x = rand() % N;
+		while (board.full(x)) x = rand() % N;
 		return x;
 	}
 
 	// 若所有分支局面皆探索过，则使用 UCT 公式选择最优局面
 
 	double Possibility = -1;
-	int BestAction = -1;
-	for(int i = 0; i < N; i++) if (top[i])
+	int Action = -1;
+	for(int i = 0; i < N; i++) if (!board.full(i))
 		if (Possibility < (double)Win_Times[nowSituation][i]/Choose_Times[nowSituation][i] + sqrt(2*log(Total_Times[nowSituation])/Choose_Times[nowSituation][i]))
 		{
 			Possibility = (double)Win_Times[nowSituation][i]/Choose_Times[nowSituation][i] + sqrt(2*log(Total_Times[nowSituation])/Choose_Times[nowSituation][i]);
-			BestAction = i;
+			Action = i;
 		}
-	return BestAction;
+
+	return Action;
 }
 
 // 蒙特卡洛搜索
 
-int MCTS(int now, int player)
-{
-	#ifdef _DEBUG
-	_cprintf("%d %d %d ---- ", now, player);
-	#endif
+int LastAction;
 
-	if (GameOver()) return 0;
+int MCTS(const int now, const int player)
+{
+	if (now && board.GameOver(LastAction, 3-player)) return 0;
 
 	// 选取分支局面
 
@@ -78,14 +75,8 @@ int MCTS(int now, int player)
 
 	// 更新局面
 
-	board[Action][--top[Action]] = player;
-	bool noFlag = false;
-	if (top[noX] - 1 == noY)
-		top[noX]--, noFlag = true;
-
-	#ifdef _DEBUG
-	_cprintf("%d %d %d\n", WIN[1], WIN[2], Action);
-	#endif
+	board.PlaceChess(Action, player);
+	LastAction = Action;
 
 	// 进行探索
 
@@ -99,9 +90,7 @@ int MCTS(int now, int player)
 
 	// 还原局面
 
-	if (noFlag)
-		top[noX]++;
-	board[Action][top[Action]++] = 0;
+	board.RemoveChess(Action, player);
 
 	// 反向传播
 
@@ -114,7 +103,7 @@ int GetFinalAction()
 {
 	Possibility = -1;
 	Action = -1;
-	for(int i = 0; i < N; i++) if (top[i])
+	for(int i = 0; i < N; i++) if (!board.full(i))
 		if (Possibility < (double)Win_Times[0][i]/max(1,Choose_Times[0][i]))
 			Possibility = (double)Win_Times[0][i]/max(1,Choose_Times[0][i]), Action = i;
 	return Action;
@@ -124,13 +113,13 @@ int GetFinalAction()
 int GAME[409], GAMETOT = 0; // 初始化棋局历史信息记录数组
 void GetFinalData()
 {
-	for(int i = 0; i < N; i++) if (top[i])
+	for(int i = 0; i < N; i++) if (!board.full(i))
 		_cprintf("%d, w = %d, n = %d\n", i, Win_Times[0][i], Choose_Times[0][i]);
-	if (lastY != -1) GAME[GAMETOT++] = lastY;
+	if (lastX != -1) GAME[GAMETOT++] = lastX;
 	_cprintf("\n%d %d %d %d\n%d\n", N, M, noX, noY, GAMETOT);
 	for(int i = 0; i < GAMETOT; i++)
 		_cprintf("%d ", GAME[i]);
-	_cprintf("\n\nAction: %d\n%.2lf%%\n\n====================================================\n\n", Action, Possibility*100);
+	_cprintf("\n\nAction: %d\n%.2lf%%\n%d\n\n====================================================\n\n", Action, Possibility*100, Total_Situation);
 	GAME[GAMETOT++] = Action;
 }
 #endif

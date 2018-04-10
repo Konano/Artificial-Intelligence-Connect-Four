@@ -60,7 +60,7 @@ int LastAction;
 
 int MCTS(const int now, const int player)
 {
-	if (now && board.GameOver(LastAction, 3-player)) return 0;
+	if (now && board.GameOver(LastAction)) return 0;
 
 	// 选取分支局面
 

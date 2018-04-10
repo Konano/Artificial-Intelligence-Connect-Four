@@ -17,28 +17,23 @@ void BOARD::Init(const int _N, const int _M, const int _noX, const int _noY, con
 
 inline void BOARD::clear()
 {
-	for(int i = 0; i < 3; i++)
-		clr(boardX[i], 0),
-		clr(boardY[i], 0),
-		clr(boardVL[i], 0),
-		clr(boardVR[i], 0);
+	clr(boardX, 0);
+	clr(boardY, 0);
+	clr(boardVL, 0);
+	clr(boardVR, 0);
 }
 
 void BOARD::PlaceChess(const int &X, const int &player)
 {
 	int Y = top[X] - 1;
 
-	boardX[0][X] |= (1<<Y);
-	boardX[player][X] |= (1<<Y);
+	boardX[X] |= (1 << (Y*2+player));
 
-	boardY[0][Y] |= (1<<X);
-	boardY[player][Y] |= (1<<X);
+	boardY[Y] |= (1 << (X*2+player));
 
-	boardVL[0][X-Y+M] |= (1<<X);
-	boardVL[player][X-Y+M] |= (1<<X);
+	boardVL[X-Y+M] |= (1 << (X*2+player));
 
-	boardVR[0][X+Y] |= (1<<X);
-	boardVR[player][X+Y] |= (1<<X);
+	boardVR[X+Y] |= (1 << (X*2+player));
 
 	top[X]--;
 
@@ -51,34 +46,30 @@ void BOARD::RemoveChess(const int &X, const int &player)
 
 	int Y = top[X];
 
-	boardX[0][X] -= (1<<Y);
-	boardX[player][X] -= (1<<Y);
+	boardX[X] -= (1 << (Y*2+player));
 
-	boardY[0][Y] -= (1<<X);
-	boardY[player][Y] -= (1<<X);
+	boardY[Y] -= (1 << (X*2+player));
 
-	boardVL[0][X-Y+M] -= (1<<X);
-	boardVL[player][X-Y+M] -= (1<<X);
+	boardVL[X-Y+M] -= (1 << (X*2+player));
 
-	boardVR[0][X+Y] -= (1<<X);
-	boardVR[player][X+Y] -= (1<<X);
+	boardVR[X+Y] -= (1 << (X*2+player));
 
 	top[X]++;
 }
 
-bool BOARD::GameOver(const int X, const int player)
+bool BOARD::GameOver(const int &X)
 {
 	int Y = top[X];
 	if (X == noX && Y == noY) Y++;
 	if (Y == M) return false;
 
-	return (InALine(boardX[player][X]) || InALine(boardY[player][Y]) ||
-			InALine(boardVL[player][X-Y+M]) || InALine(boardVR[player][X+Y]));
+	return (InALine(boardX[X]) || InALine(boardY[Y]) ||
+			InALine(boardVL[X-Y+M]) || InALine(boardVR[X+Y]));
 }
 
 inline bool BOARD::InALine(const int &a)
 {
-	return (a & (a >> 1) & (a >> 2) & (a >> 3)) ? true : false;
+	return (a & (a >> 2) & (a >> 4) & (a >> 6)) ? true : false;
 }
 
 int BOARD::GetTop(const int &X) { return top[X]; }
@@ -89,8 +80,8 @@ void BOARD::OutputBoard()
 {
 	for(int j = 0; j < M; j++)
 	{
-		for(int i = 0; i < N; i++) if (boardX[0][i] & (1<<j))
-			_cprintf("%d", (boardX[1][i] & (1<<j)) ? 1 : 2);
+		for(int i = 0; i < N; i++) if (boardX[i] & (3 << (j*2+1)))
+			_cprintf("%d", (boardX[i] & (1 << (j*2+1))) ? 1 : 2);
 		else
 			_cprintf("0");
 		_cprintf("\n");

@@ -14,7 +14,7 @@ void WinPlace()
 		for(int i = 0; i < N; i++) if (!board.full(i))
 		{
 			board.PlaceChess(i, player);
-			if (board.GameOver(i, player)) WIN[player] = WIN[player] * (N+1) + i + 1;
+			if (board.GameOver(i)) WIN[player] = WIN[player] * (N+1) + i + 1;
 			board.RemoveChess(i, player);
 		}
 	}
